@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System - Treatments</title>
+    <style>
+        /* Body style */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container style */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header style */
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+/* Form style */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+form input[type="number"],
+form input[type="text"],
+form input[type="date"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #131313;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Treatments list table style */
+#treatmentListTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#treatmentListTable th,
+#treatmentListTable td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#treatmentListTable th {
+    background-color: #f2f2f2;
+}
+
+    </style>
+</head>
+<body>
+    <h1>Hospital Management System - Treatments</h1>
+    
+    <!-- Form to insert new treatment -->
+    <h2>Add New Treatment</h2>
+    <form id="addTreatmentForm">
+        <label for="appointmentID">Appointment ID:</label>
+        <input type="number" id="appointmentID" name="appointmentID" required><br>
+        
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description" required><br>
+        
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required><br>
+        
+        <button type="submit">Add Treatment</button>
+    </form>
+
+    <!-- Display Treatments -->
+    <h2>All Treatments</h2>
+    <table id="treatmentListTable">
+        <thead>
+            <tr>
+                <th>Treatment ID</th>
+                <th>Appointment ID</th>
+                <th>Description</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody id="treatmentList"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fetch and display treatments
+            fetchTreatments();
+
+            // Handle form submission for adding a new treatment
+            document.getElementById("addTreatmentForm").addEventListener("submit", function(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const treatmentData = Object.fromEntries(formData.entries());
+                addTreatment(treatmentData);
+            });
+        });
+
+        function fetchTreatments() {
+            fetch("treatment.php?action=getTreatments")
+                .then(response => response.json())
+                .then(data => {
+                    const treatmentList = document.getElementById("treatmentList");
+                    treatmentList.innerHTML = "";
+                    data.forEach(treatment => {
+                        const treatmentRow = document.createElement("tr");
+                        treatmentRow.innerHTML = `
+                            <td>${treatment.TreatmentID}</td>
+                            <td>${treatment.AppointmentID}</td>
+                            <td>${treatment.Description}</td>
+                            <td>${treatment.Date}</td>
+                        `;
+                        treatmentList.appendChild(treatmentRow);
+                    });
+                });
+        }
+
+        function addTreatment(treatmentData) {
+            fetch("treatment.php?action=addTreatment", {
+                method: "POST",
+                body: JSON.stringify(treatmentData),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error("Failed to add treatment.");
+            })
+            .then(data => {
+                console.log(data);
+                fetchTreatments();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+    </script>
+</body>
+</html>

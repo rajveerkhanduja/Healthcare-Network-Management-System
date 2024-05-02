@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System - Appointments</title>
+    <style>
+        /* Body style */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container style */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header style */
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+/* Form style */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+form input[type="text"],
+form input[type="date"],
+form select,
+form input[type="tel"],
+form input[type="time"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #131313;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Appointment list table style */
+#appointmentListTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#appointmentListTable th,
+#appointmentListTable td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#appointmentListTable th {
+    background-color: #f2f2f2;
+}
+
+    </style>
+</head>
+<body>
+    <h1>Hospital Management System - Appointments</h1>
+    
+    <!-- Form to schedule a new appointment -->
+    <h2>Schedule New Appointment</h2>
+    <form id="addAppointmentForm">
+        <label for="patientID">Patient ID:</label>
+        <input type="number" id="patientID" name="patientID" required><br>
+        
+        <label for="doctorID">Doctor ID:</label>
+        <input type="number" id="doctorID" name="doctorID" required><br>
+        
+        <label for="apptDate">Date:</label>
+        <input type="date" id="apptDate" name="apptDate" required><br>
+        
+        <label for="apptTime">Time:</label>
+        <input type="time" id="apptTime" name="apptTime" required><br>
+        
+        <label for="purpose">Purpose:</label>
+        <input type="text" id="purpose" name="purpose" required><br>
+        
+        <button type="submit">Schedule Appointment</button>
+    </form>
+
+    <!-- Display Appointments -->
+    <h2>All Appointments</h2>
+    <table id="appointmentListTable">
+        <thead>
+            <tr>
+                <th>Patient ID</th>
+                <th>Doctor ID</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Purpose</th>
+            </tr>
+        </thead>
+        <tbody id="appointmentList"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fetch and display appointments
+            fetchAppointments();
+
+            // Handle form submission for scheduling a new appointment
+            document.getElementById("addAppointmentForm").addEventListener("submit", function(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const appointmentData = Object.fromEntries(formData.entries());
+                addAppointment(appointmentData);
+            });
+        });
+
+        function fetchAppointments() {
+            fetch("appointment.php?action=getAppointments")
+                .then(response => response.json())
+                .then(data => {
+                    const appointmentList = document.getElementById("appointmentList");
+                    appointmentList.innerHTML = "";
+                    data.forEach(appointment => {
+                        const appointmentRow = document.createElement("tr");
+                        appointmentRow.innerHTML = `
+                            <td>${appointment.PatientID}</td>
+                            <td>${appointment.DoctorID}</td>
+                            <td>${appointment.ApptDate}</td>
+                            <td>${appointment.ApptTime}</td>
+                            <td>${appointment.Purpose}</td>
+                        `;
+                        appointmentList.appendChild(appointmentRow);
+                    });
+                });
+        }
+
+        function addAppointment(appointmentData) {
+            fetch("appointment.php?action=addAppointment", {
+                method: "POST",
+                body: JSON.stringify(appointmentData),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error("Failed to schedule appointment.");
+            })
+            .then(data => {
+                console.log(data);
+                fetchAppointments();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+    </script>
+</body>
+</html>

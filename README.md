@@ -1,1 +1,1 @@
-# Healthcare-Network-Management-System
+# DBMS_project

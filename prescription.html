@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System - Prescriptions</title>
+    <style>
+        /* Body style */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container style */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header style */
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+/* Form style */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+form input[type="text"],
+form input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #131313;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Prescription list table style */
+#prescriptionListTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#prescriptionListTable th,
+#prescriptionListTable td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#prescriptionListTable th {
+    background-color: #f2f2f2;
+}
+
+    </style>
+</head>
+<body>
+    <h1>Hospital Management System - Prescriptions</h1>
+    
+    <!-- Form to insert new prescription -->
+    <h2>Add New Prescription</h2>
+    <form id="addPrescriptionForm">
+        <label for="treatmentID">Treatment ID:</label>
+        <input type="number" id="treatmentID" name="treatmentID" required><br>
+        
+        <label for="medication">Medication:</label>
+        <input type="text" id="medication" name="medication" required><br>
+        
+        <label for="dosage">Dosage:</label>
+        <input type="text" id="dosage" name="dosage" required><br>
+        
+        <button type="submit">Add Prescription</button>
+    </form>
+
+    <!-- Display Prescriptions -->
+    <h2>All Prescriptions</h2>
+    <table id="prescriptionListTable">
+        <thead>
+            <tr>
+                <th>Prescription ID</th>
+                <th>Treatment ID</th>
+                <th>Medication</th>
+                <th>Dosage</th>
+            </tr>
+        </thead>
+        <tbody id="prescriptionList"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fetch and display prescriptions
+            fetchPrescriptions();
+
+            // Handle form submission for adding a new prescription
+            document.getElementById("addPrescriptionForm").addEventListener("submit", function(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const prescriptionData = Object.fromEntries(formData.entries());
+                addPrescription(prescriptionData);
+            });
+        });
+
+        function fetchPrescriptions() {
+            fetch("prescription.php?action=getPrescriptions")
+                .then(response => response.json())
+                .then(data => {
+                    const prescriptionList = document.getElementById("prescriptionList");
+                    prescriptionList.innerHTML = "";
+                    data.forEach(prescription => {
+                        const prescriptionRow = document.createElement("tr");
+                        prescriptionRow.innerHTML = `
+                            <td>${prescription.PrescriptionID}</td>
+                            <td>${prescription.TreatmentID}</td>
+                            <td>${prescription.Medication}</td>
+                            <td>${prescription.Dosage}</td>
+                        `;
+                        prescriptionList.appendChild(prescriptionRow);
+                    });
+                });
+        }
+
+        function addPrescription(prescriptionData) {
+            fetch("prescription.php?action=addPrescription", {
+                method: "POST",
+                body: JSON.stringify(prescriptionData),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error("Failed to add prescription.");
+            })
+            .then(data => {
+                console.log(data);
+                fetchPrescriptions();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+    </script>
+</body>
+</html>

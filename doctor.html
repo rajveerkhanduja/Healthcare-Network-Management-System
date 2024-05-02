@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System - Doctors</title>
+    <style>
+        /* Body style */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container style */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header style */
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+/* Form style */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+form input[type="text"],
+form input[type="date"],
+form input[type="email"],
+form input[type="tel"],
+form select {
+    width: calc(100% - 22px);   
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+form button {
+    width: calc(100% - 22px);
+    padding: 10px;
+    background-color: #131313;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Doctor list table style */
+#doctorListTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#doctorListTable th,
+#doctorListTable td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#doctorListTable th {
+    background-color: #f2f2f2;
+}
+
+    </style>
+</head>
+<body>
+    <h1>Hospital Management System - Doctors</h1>
+    
+    <!-- Form to insert new doctor -->
+    <h2>Add New Doctor</h2>
+    <form id="addDoctorForm">
+        <label for="doctorName">Name:</label>
+        <input type="text" id="doctorName" name="doctorName" required><br>
+        
+        <label for="specialty">Specialty:</label>
+        <input type="text" id="specialty" name="specialty" required><br>
+        
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required><br>
+        
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br>
+        
+        <button type="submit">Add Doctor</button>
+    </form>
+
+    <!-- Display Doctors -->
+    <h2>All Doctors</h2>
+    <table id="doctorListTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Specialty</th>
+                <th>Phone</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody id="doctorList"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fetch and display doctors
+            fetchDoctors();
+
+            // Handle form submission for adding a new doctor
+            document.getElementById("addDoctorForm").addEventListener("submit", function(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const doctorData = Object.fromEntries(formData.entries());
+                addDoctor(doctorData);
+            });
+        });
+
+        function fetchDoctors() {
+            fetch("doctor.php?action=getDoctors")
+                .then(response => response.json())
+                .then(data => {
+                    const doctorList = document.getElementById("doctorList");
+                    doctorList.innerHTML = "";
+                    data.forEach(doctor => {
+                        const doctorRow = document.createElement("tr");
+                        doctorRow.innerHTML = `
+                            <td>${doctor.Name}</td>
+                            <td>${doctor.Specialty}</td>
+                            <td>${doctor.Phone}</td>
+                            <td>${doctor.Email}</td>
+                        `;
+                        doctorList.appendChild(doctorRow);
+                    });
+                });
+        }
+
+        function addDoctor(doctorData) {
+            fetch("doctor.php?action=addDoctor", {
+                method: "POST",
+                body: JSON.stringify(doctorData),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error("Failed to add doctor.");
+            })
+            .then(data => {
+                console.log(data);
+                fetchDoctors();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+    </script>
+</body>
+</html>
